@@ -4,6 +4,7 @@ https://data.mendeley.com/datasets/jxwvdwhpc2/1?
 
 Environment setup
 1. put the dataset into data\raw\\(40X, 100X, 200X, 400X)
+```
 C:.
 ├───raw
 │   ├───100X
@@ -43,6 +44,7 @@ C:.
 │       ├───phyllodes_tumor
 │       └───tubular_adenoma
 └───test
+```
 2. python -m venv venv
 3. venv\Scripts\activate
 4. pip install -r requirements.txt
