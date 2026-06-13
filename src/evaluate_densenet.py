@@ -30,7 +30,6 @@ def predict_with_tta(model, dataset_csv, tta_transforms, batch_size, device):
     all_preds = []
     all_labels = []
 
-    # Load raw dataset (no transform) to apply TTA transforms manually
     import pandas as pd
     from PIL import Image
     df = pd.read_csv(dataset_csv)
@@ -86,14 +85,16 @@ def predict_standard(model, loader, device):
 def main():
     print(f"Using device: {DEVICE}")
 
-    # --- Build EfficientNet-B5 model ---
-    model = models.efficientnet_b5(weights=None)
-    in_features = model.classifier[-1].in_features
-    model.classifier = nn.Sequential(
-        nn.Dropout(p=0.4),
-        nn.Linear(in_features, NUM_CLASSES)
-    )
-    model.load_state_dict(torch.load("models/best_efficientnet_b5_all_mag.pth", map_location=DEVICE))
+    # --- Build DenseNet121 model ---
+    model = models.densenet121(weights=None)
+    model.classifier = nn.Linear(model.classifier.in_features, NUM_CLASSES)
+    
+    try:
+        model.load_state_dict(torch.load("models/best_densenet121_cutmix_all_mag.pth", map_location=DEVICE))
+    except FileNotFoundError:
+        print("Warning: models/best_densenet121_cutmix_all_mag.pth not found. Tolong pastikan model DenseNet sudah dilatih.")
+        return
+
     model = model.to(DEVICE)
     model.eval()
 

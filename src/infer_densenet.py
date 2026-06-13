@@ -5,6 +5,7 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
+import os
 
 from dataset import get_val_test_transforms
 
@@ -60,15 +61,15 @@ class GradCAM:
         return cam.cpu().detach().numpy()
 
 
-def load_model(model_path="models\\best_efficientnet_b5_all_mag.pth"):
-    model = models.efficientnet_b5(weights=None)
-    in_features = model.classifier[-1].in_features
-    model.classifier = nn.Sequential(
-        nn.Dropout(p=0.4),
-        nn.Linear(in_features, NUM_CLASSES)
-    )
+def load_model(model_path="models/best_densenet121_cutmix_all_mag.pth"):
+    model = models.densenet121(weights=None)
+    model.classifier = nn.Linear(model.classifier.in_features, NUM_CLASSES)
 
-    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    if os.path.exists(model_path):
+        model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    else:
+        print(f"Warning: {model_path} not found. Grad-CAM might throw an error or give bad outputs.")
+
     model = model.to(DEVICE)
     model.eval()
 
@@ -95,13 +96,15 @@ def predict_image(image_path, model):
     }
     
     # Generate Heatmap — use last feature block as target layer
-    grad_cam = GradCAM(model, model.features[-1])
+    # For DenseNet we hook to the 'features' sequential module root which holds the final feature maps
+    grad_cam = GradCAM(model, model.features)
     image_tensor.requires_grad_()
     cam = grad_cam.generate(image_tensor, pred_idx)
     
-    # Overlay heatmap (EfficientNet-B5 native resolution: 456x456)
-    original_img = image.resize((456, 456))
-    cam_resized = np.array(Image.fromarray(cam).resize((456, 456), Image.Resampling.BILINEAR))
+    # Overlay heatmap
+    render_size = (image_tensor.shape[3], image_tensor.shape[2])
+    original_img = image.resize(render_size)
+    cam_resized = np.array(Image.fromarray(cam).resize(render_size, Image.Resampling.BILINEAR))
     
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
@@ -116,8 +119,9 @@ def predict_image(image_path, model):
     plt.axis("off")
     
     plt.tight_layout()
-    plt.savefig("prediction_heatmap.png")
-    print("Heatmap saved as 'prediction_heatmap.png'")
+    output_heatmap = "prediction_heatmap_densenet.png"
+    plt.savefig(output_heatmap)
+    print(f"Heatmap saved as '{output_heatmap}'")
     plt.close()
 
     return result
@@ -134,6 +138,10 @@ def get_top_k_predictions(probabilities_dict, k=3):
 
 def main():
     image_path = input("Enter image path: ").strip()
+    
+    if not os.path.exists(image_path):
+        print("Error: Image path not found.")
+        return
 
     model = load_model()
     result = predict_image(image_path, model)

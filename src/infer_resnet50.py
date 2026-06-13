@@ -60,12 +60,11 @@ class GradCAM:
         return cam.cpu().detach().numpy()
 
 
-def load_model(model_path="models\\best_efficientnet_b5_all_mag.pth"):
-    model = models.efficientnet_b5(weights=None)
-    in_features = model.classifier[-1].in_features
-    model.classifier = nn.Sequential(
-        nn.Dropout(p=0.4),
-        nn.Linear(in_features, NUM_CLASSES)
+def load_model(model_path="models\\best_resnet50_all_mag.pth"):
+    model = models.resnet50(weights=None)
+    model.fc = nn.Sequential(
+        nn.Dropout(p=0.5),
+        nn.Linear(model.fc.in_features, NUM_CLASSES)
     )
 
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
@@ -94,14 +93,14 @@ def predict_image(image_path, model):
         }
     }
     
-    # Generate Heatmap — use last feature block as target layer
-    grad_cam = GradCAM(model, model.features[-1])
+    # Generate Heatmap
+    grad_cam = GradCAM(model, model.layer4[-1])
     image_tensor.requires_grad_()
     cam = grad_cam.generate(image_tensor, pred_idx)
     
-    # Overlay heatmap (EfficientNet-B5 native resolution: 456x456)
-    original_img = image.resize((456, 456))
-    cam_resized = np.array(Image.fromarray(cam).resize((456, 456), Image.Resampling.BILINEAR))
+    # Overlay heatmap
+    original_img = image.resize((224, 224))
+    cam_resized = np.array(Image.fromarray(cam).resize((224, 224), Image.Resampling.BILINEAR))
     
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
@@ -133,7 +132,16 @@ def get_top_k_predictions(probabilities_dict, k=3):
 
 
 def main():
-    image_path = input("Enter image path: ").strip()
+    image_path = input("Enter image path: ").strip().strip('"').strip("'")
+    
+    if not image_path:
+        print("Error: No image path provided. Please run the script again and enter a valid path.")
+        return
+
+    import os
+    if not os.path.exists(image_path):
+        print(f"Error: Could not find the file at '{image_path}'")
+        return
 
     model = load_model()
     result = predict_image(image_path, model)
