@@ -14,6 +14,7 @@ from huggingface_hub import hf_hub_download
 st.set_page_config(page_title="HistopathAI", layout="centered")
 
 CONFIDENCE_THRESHOLD = 0.20
+MODEL_REPO_ID = os.getenv("HF_MODEL_REPO", "qbonafide/HistopathAI-models")
 
 CLASS_NAMES = [
     "Adenosis",
@@ -204,7 +205,7 @@ def load_efficientnet_model():
         model_path = local_path
     else:
         model_path = hf_hub_download(
-            repo_id="Locelyy/HistopathAI",
+            repo_id=MODEL_REPO_ID,
             filename=local_path
         )
 
@@ -232,7 +233,7 @@ def load_densenet_model():
     else:
         # Download from Hugging Face
         model_path = hf_hub_download(
-            repo_id="Locelyy/HistopathAI",
+            repo_id=MODEL_REPO_ID,
             filename=local_path
         )
 
@@ -268,7 +269,7 @@ def load_model():
         model_path = local_path
     else:
         model_path = hf_hub_download(
-            repo_id="Locelyy/HistopathAI",
+            repo_id=MODEL_REPO_ID,
             filename=local_path
         )
 

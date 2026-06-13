@@ -79,3 +79,12 @@ Aplikasi web ini akan memuat model terbaru dan memfasilitasi Anda untuk mengungg
 ```bash
 streamlit run app/app.py
 ```
+
+## Deploy Notes
+Jika file model tidak ikut ke GitHub, deploy Streamlit tetap bisa jalan selama repo Hugging Face `qbonafide/HistopathAI-models` berisi file berikut:
+```text
+models/resnet50.pth
+models/densenet121.pth
+models/efficientnet_b5.pth
+```
+App akan membaca repo itu lewat env `HF_MODEL_REPO`. Kalau perlu ganti repo, set secret/environment variable tersebut di Streamlit Community Cloud.

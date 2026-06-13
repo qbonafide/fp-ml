@@ -2,6 +2,7 @@ data/
 models/
 notebooks/
 outputs/
+HistopathAI-models/
 src/__pycache__/
 *.pyc
 .DS_Store
