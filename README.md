@@ -88,3 +88,9 @@ models/densenet121.pth
 models/efficientnet_b5.pth
 ```
 App akan membaca repo itu lewat env `HF_MODEL_REPO`. Kalau perlu ganti repo, set secret/environment variable tersebut di Streamlit Community Cloud.
+
+
+## Output HistopathAI: Streamlit Web Untuk Analisa Data
+[HistopathAI](https://histopathai.streamlit.app/)   
+    <img width="623" height="338" alt="Screenshot 2026-06-15 005026" src="https://github.com/user-attachments/assets/b3835c8d-1011-4bcd-9236-8a575accb3d2" />
+
